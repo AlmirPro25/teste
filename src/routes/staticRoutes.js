@@ -3,6 +3,9 @@ const path = require('path');
 const { CONFIG, logger } = require('../core/config');
 
 function configureStaticRoutes(app) {
+    // Servir arquivos estáticos do diretório 'public' na raiz (ex: /index.html)
+    app.use(express.static(path.join(__dirname, '..', 'public')));
+
     app.use('/screenshots', express.static(CONFIG.SCREENSHOT_DIR));
     app.use('/uploads', express.static(CONFIG.UPLOAD_DIR));
     app.use('/generated_systems', express.static(CONFIG.SYSTEM_GENERATION_DIR));

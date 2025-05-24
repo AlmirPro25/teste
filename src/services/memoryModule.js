@@ -1,9 +1,5 @@
 const { logger } = require('../core/config');
-
-// TODO: Importar ou injetar dbRun, dbGet, dbAll de um módulo de banco de dados dedicado.
-const dbRun = async (sql, params = []) => { logger.debug('dbRun placeholder called', { sql, params }); return Promise.resolve(); };
-const dbGet = async (sql, params = []) => { logger.debug('dbGet placeholder called', { sql, params }); return Promise.resolve(null); };
-const dbAll = async (sql, params = []) => { logger.debug('dbAll placeholder called', { sql, params }); return Promise.resolve([]); };
+const { dbRun, dbGet, dbAll } = require('../config/initializers/database');
 
 const MemoryModule = {
     async addTask(taskId, userId, command, status = 'started') {

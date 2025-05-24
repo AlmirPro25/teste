@@ -9,29 +9,12 @@ const VisionService = require('./visionService');
 const MediaGenerationSystem = require('./mediaGenerationSystem');
 const SystemGenerator = require('./systemGenerator');
 const CacheManager = require('./cacheManager');
-const FileProcessor = require('./fileProcessor'); 
-
-// Placeholder para io (Socket.IO instance)
-// TODO: Injete ou importe a instância 'io' do Socket.IO aqui.
-const io_placeholder = {
-    to: (room) => ({ emit: (event, data) => logger.debug(`MaestroV4.io_placeholder.to('${room}').emit('${event}') called`, data) }),
-    emit: (event, data) => logger.debug(`MaestroV4.io_placeholder.emit('${event}') called`, data),
-    sockets: {
-        sockets: new Map(), 
-        get: function(id) { return this.sockets.get(id); } 
-    },
-    _mockSocket: { 
-        id: 'mockSocketId',
-        join: (room) => logger.debug(`MaestroV4.io_placeholder._mockSocket.join('${room}') called`),
-        leave: (room) => logger.debug(`MaestroV4.io_placeholder._mockSocket.leave('${room}') called`),
-        emit: (event, data) => logger.debug(`MaestroV4.io_placeholder._mockSocket.emit('${event}') called`, data)
-    }
-};
+const FileProcessor = require('./fileProcessor');
 
 const MaestroV4 = {
-    io: io_placeholder, 
-    services: { 
-        aiService: AIService, 
+    io: null, // Atribuído em serverSetup.js
+    services: {
+        aiService: AIService,
         memory: MemoryModule,
         messages: MessageSystem,
         web: WebService,

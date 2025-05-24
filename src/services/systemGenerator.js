@@ -5,19 +5,12 @@ const DockerService = require('./dockerService');
 const MessageSystem = require('./messageSystem');
 const MemoryModule = require('./memoryModule'); // SystemGenerator usa MemoryModule diretamente também
 
-// Placeholder para io (Socket.IO instance)
-// TODO: Injete ou importe a instância 'io' do Socket.IO aqui.
-const io_placeholder = {
-    to: (room) => ({ emit: (event, data) => logger.debug(`io_placeholder.to('${room}').emit('${event}') called`, data) }),
-    emit: (event, data) => logger.debug(`io_placeholder.emit('${event}') called`, data)
-};
-
 const SystemGenerator = {
-    aiService: null, // Será injetado
-    dockerService: DockerService, 
-    messageSystem: MessageSystem, 
-    io: io_placeholder, // Usar placeholder
-    config: CONFIG, 
+    aiService: null, // Atribuído via injectDependencies ou diretamente em serverSetup.js
+    dockerService: DockerService,
+    messageSystem: MessageSystem, // MessageSystem.io é atribuído em serverSetup.js
+    // io: null, // Não é usado diretamente; comunicação via MessageSystem ou passado em métodos se necessário
+    config: CONFIG,
 
     injectDependencies(services) { // 'services' aqui deve ser o AIService
          this.aiService = services; 

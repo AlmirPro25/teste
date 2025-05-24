@@ -7,21 +7,9 @@ const { CONFIG, logger } = require('../core/config');
 // Definição local de 'delay'
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
-// Placeholder para io (Socket.IO instance)
-// TODO: Injete ou importe a instância 'io' do Socket.IO aqui.
-const io_placeholder = {
-    sockets: { 
-        sockets: { 
-            get: (socketId) => ({ 
-                emit: (event, data) => logger.debug(`io_placeholder.sockets.sockets.get('${socketId}').emit('${event}') called`, data)
-            })
-        }
-    }
-};
-
 const AutomationSystem = {
     robot: robot, 
-    io: io_placeholder, 
+    io: null, // Atribuído em serverSetup.js
     pendingConfirmations: new Map(), 
 
     async executeAction(action, args = [], taskId, socketId) {
@@ -102,7 +90,11 @@ const AutomationSystem = {
     },
      confirmCriticalAction(action, args, taskId, socketId) {
          return new Promise((resolve, reject) => {
-             const targetSocket = this.io.sockets.sockets.get(socketId); 
+             if (!this.io || !this.io.sockets || !this.io.sockets.sockets) {
+                 logger.error("AutomationSystem: Instância io ou io.sockets.sockets não configurada. Não é possível confirmar ação.");
+                 return reject(new Error("Sistema de automação não totalmente inicializado."));
+             }
+             const targetSocket = this.io.sockets.sockets.get(socketId);
              if (!targetSocket) {
                   logger.warn(`Automation: Não foi possível encontrar socket ${socketId} para confirmar ação ${action}. Rejeitando.`);
                   return reject(new Error("Usuário não conectado para confirmação."));

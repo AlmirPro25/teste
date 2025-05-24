@@ -1,53 +1,22 @@
-// DASHBOARD_HTML é muito grande, então apenas uma parte dela para referência
-// O conteúdo completo seria colado aqui em um cenário real.
-const DASHBOARD_HTML = `
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nexus Unified v4.9 (DeepSite)</title>
-    <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; background-color: #1a1a1a; color: #e0e0e0; display: flex; flex-direction: column; min-height: 100vh; }
-        /* ... (muitos outros estilos) ... */
-    </style>
-</head>
-<body>
-    <header>
-        <h1>Nexus Unified Interface v4.9</h1>
-        <div class="top-controls">
-            <select id="apiRoleSelect" title="Selecionar API Principal para Tarefas">
-                <option value="LeaderAPI">LeaderAPI (Padrão)</option>
-                <option value="NluAPI">NluAPI (Análise)</option>
-                <option value="PlannerAPI">PlannerAPI (Planejamento)</option>
-                <option value="SynthesisAPI">SynthesisAPI (Síntese)</option>
-                <option value="AnalystAPI">AnalystAPI (Análise de Dados)</option>
-                <option value="CodingAPI">CodingAPI (Geração de Código)</option>
-                <option value="CodeReviewAPI">CodeReviewAPI (Revisão de Código)</option>
-                <option value="ReplicatorAPI">ReplicatorAPI (Replicação/Ajuste)</option>
-                <option value="AutomationAPI">AutomationAPI (Automação Desktop)</option>
-                <option value="CreativeAPI">CreativeAPI (Escrita Criativa)</option>
-                <option value="ConversationalAPI">ConversationalAPI (Chat Geral)</option>
-                <option value="MultimodalAPI">MultimodalAPI (Visão/Multimodal)</option>
-            </select>
-            <button id="clearHistoryButton" title="Limpar Histórico da Task Atual">Limpar Histórico</button>
-            <button id="themeToggle" title="Alternar Tema Claro/Escuro">🌓</button>
-        </div>
-    </header>
-    <main>
-        <!-- ... (muito conteúdo do dashboard) ... -->
-    </main>
-    <footer>
-        <p>Nexus Unified v4.9 - Status: <span id="systemStatus">Conectando...</span></p>
-    </footer>
-    <script>
-        // ... (muito JavaScript) ...
-    </script>
-</body>
-</html>`; // Conteúdo completo é muito grande
+const fs = require('fs').promises;
+const path = require('path');
+const { logger } = require('../core/config'); // Logger for potential errors
 
-function configureDashboardRoutes(app) {
-    app.get('/', (req, res) => res.type('html').send(DASHBOARD_HTML));
+// Caminho para o arquivo index.html
+const indexPath = path.join(__dirname, '..', 'public', 'index.html');
+
+async function configureDashboardRoutes(app) {
+    app.get('/', async (req, res) => {
+        try {
+            const htmlContent = await fs.readFile(indexPath, 'utf8');
+            res.type('html').send(htmlContent);
+        } catch (error) {
+            logger.error("Erro ao ler dashboard HTML:", error);
+            res.status(500).send("Erro interno ao carregar o painel.");
+        }
+    });
 }
 
-module.exports = { configureDashboardRoutes, DASHBOARD_HTML };
+// DASHBOARD_HTML constante removida
+
+module.exports = { configureDashboardRoutes };

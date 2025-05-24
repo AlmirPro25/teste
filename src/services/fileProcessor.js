@@ -1,24 +1,14 @@
 const fs = require('fs').promises;
 const pdfParse = require('pdf-parse');
 const { CONFIG, logger } = require('../core/config');
-const MessageSystem = require('./messageSystem'); 
-
-// Placeholder para taskQueue e dbRun
-// TODO: Importar 'taskQueue' de '../config/bullmq.js'
-const taskQueue_placeholder = {
-    add: async (jobType, data) => {
-        logger.debug('taskQueue_placeholder.add called', { jobType, data });
-        return { id: 'placeholder_job_id_' + Date.now() };
-    }
-};
-// TODO: Importar 'dbRun' de um módulo de banco de dados dedicado.
-const dbRun_placeholder = async (sql, params = []) => { logger.debug('dbRun_placeholder called', { sql, params }); return Promise.resolve(); };
+const MessageSystem = require('./messageSystem');
+const { dbRun } = require('../config/initializers/database'); // Importar dbRun real
 
 const FileProcessor = {
-    config: CONFIG, 
-    taskQueue: taskQueue_placeholder, 
+    config: CONFIG,
+    taskQueue: null, // Atribuído em serverSetup.js
 
-    async processUpload(file, taskId, socket) { 
+    async processUpload(file, taskId, socket) {
         if (!file) return null;
         logger.info(`FileProcessor: Processando upload ${file.filename} (${file.mimetype})`, { taskId });
 
@@ -58,9 +48,9 @@ const FileProcessor = {
                  mimeType,
              });
              logger.info(`FileProcessor: Tarefa de análise (${jobType}) enfileirada para ${filePath}. Job ID: ${job.id}`, { taskId });
-             
-             await dbRun_placeholder('UPDATE tasks SET job_id = ? WHERE task_id = ?', [job.id, taskId]);
-             if (MessageSystem && MessageSystem.send) { 
+
+             await dbRun('UPDATE tasks SET job_id = ? WHERE task_id = ?', [job.id, taskId]); // Usar dbRun importado
+             if (MessageSystem && MessageSystem.send) {
                 MessageSystem.send(taskId, 'TASK_UPDATE', { taskId, status: 'QUEUED', message: `Análise de arquivo enfileirada (Job ${job.id})` });
              }
              return job.id;

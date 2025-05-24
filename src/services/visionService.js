@@ -8,20 +8,12 @@ const MessageSystem = require('./messageSystem');
 // Definição local de 'delay'
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
-// Placeholder para io (Socket.IO instance)
-// TODO: Injete ou importe a instância 'io' do Socket.IO aqui.
-const io_placeholder = {
-    to: (room) => ({ emit: (event, data) => logger.debug(`io_placeholder.to('${room}').emit('${event}') called`, data) }),
-    emit: (event, data) => logger.debug(`io_placeholder.emit('${event}') called`, data),
-    sockets: { sockets: new Map() } // Mock básico para AutomationSystem
-};
-
 const VisionService = {
     processInstance: null,
     retries: 0,
     maxRetries: CONFIG.MAX_VISION_RETRIES,
     retryDelay: CONFIG.VISION_RETRY_DELAY,
-    ioInstance: io_placeholder, // Usar placeholder
+    ioInstance: null, // Atribuído em serverSetup.js
     loggerInstance: logger, // Usar logger importado
     isStarting: false,
     lastKnownPid: null,
@@ -90,17 +82,22 @@ const VisionService = {
     },
 
      handlePythonMessage(message) {
-          const { type, payload, message: msgText, socketId, taskId } = message; 
+          const { type, payload, message: msgText, socketId, taskId } = message;
            const targetTaskId = payload?.taskId || taskId || 'unknown_task';
-          
+
            this.loggerInstance.debug(`Visão: Mensagem recebida do Python (Type: ${type}, Task: ${targetTaskId})`);
+
+           if (!this.ioInstance) {
+               this.loggerInstance.warn("VisionService: ioInstance não configurado. Mensagens Python não podem ser encaminhadas.");
+               return;
+           }
 
            switch (type) {
                 case 'ANALYSIS_RESULT':
                      this.loggerInstance.info(`Visão: Resultado da análise recebido para Task ${targetTaskId}`, { detections: payload.detections?.length, ocr: payload.ocrText?.length > 0});
-                     this.ioInstance.to(targetTaskId).emit('ANALYSIS_RESULT', payload); 
+                     this.ioInstance.to(targetTaskId).emit('ANALYSIS_RESULT', payload);
                      break;
-                case 'DIGITAL_MIRROR_UPDATE': 
+                case 'DIGITAL_MIRROR_UPDATE':
                      this.loggerInstance.info(`Visão: Atualização do Espelho Digital recebida para Task ${targetTaskId}`);
                      this.ioInstance.to(targetTaskId).emit('DIGITAL_MIRROR_UPDATE', payload);
                      break;
@@ -112,11 +109,11 @@ const VisionService = {
                       this.ioInstance.to(targetTaskId).emit('systemError', { taskId: targetTaskId, code: 'VISION_PYTHON_ERROR', message: msgText || 'Erro interno no serviço de visão.' });
                      break;
                  case 'PYTHON_READY':
-                      this.loggerInstance.info(`Visão (PY): Processo Python pronto (PID: ${payload?.pid}).`); // Changed logger to this.loggerInstance
+                      this.loggerInstance.info(`Visão (PY): Processo Python pronto (PID: ${payload?.pid}).`);
                       this.ioInstance.emit('SYSTEM_STATUS_UPDATE', { service: 'vision', status: 'ready' });
                       break;
                  case 'PYTHON_EXITING':
-                       this.loggerInstance.warn(`Visão (PY): Processo Python iniciando desligamento (PID: ${payload?.pid}).`); // Changed logger to this.loggerInstance
+                       this.loggerInstance.warn(`Visão (PY): Processo Python iniciando desligamento (PID: ${payload?.pid}).`);
                        break;
                 default:
                      this.loggerInstance.warn(`Visão: Tipo de mensagem Python desconhecido recebido: ${type}`);
@@ -126,22 +123,26 @@ const VisionService = {
     handleProcessExit(originalTaskId, code, signal) {
         const pid = this.lastKnownPid;
         this.loggerInstance.warn(`Visão: Processo Python (PID: ${pid}) terminou com código ${code}, sinal ${signal}.`, { originalTaskId });
-        this.processInstance = null; 
-        this.isStarting = false; 
+        this.processInstance = null;
+        this.isStarting = false;
 
-        if (code !== 0 && signal !== 'SIGTERM' && this.retries < this.maxRetries) {
-            this.retries++;
-            this.loggerInstance.warn(`Visão: Tentando reiniciar processo (Tentativa ${this.retries}/${this.maxRetries}) em ${this.retryDelay}ms...`);
-            setTimeout(() => {
-                this.spawnVisionProcess(`vision_restart_${Date.now()}`);
-            }, this.retryDelay);
-        } else if (code !== 0 && signal !== 'SIGTERM') {
-            this.loggerInstance.error(`Visão: Processo Python falhou após ${this.maxRetries} tentativas (ou não retryable). Não será reiniciado automaticamente.`);
-            this.ioInstance.emit('systemError', { code: 'VISION_PROCESS_FAILED', message: 'Serviço de visão indisponível permanentemente.' });
+        if (this.ioInstance) { // Apenas emite se ioInstance estiver disponível
+            if (code !== 0 && signal !== 'SIGTERM' && this.retries < this.maxRetries) {
+                this.retries++;
+                this.loggerInstance.warn(`Visão: Tentando reiniciar processo (Tentativa ${this.retries}/${this.maxRetries}) em ${this.retryDelay}ms...`);
+                setTimeout(() => {
+                    this.spawnVisionProcess(`vision_restart_${Date.now()}`);
+                }, this.retryDelay);
+            } else if (code !== 0 && signal !== 'SIGTERM') {
+                this.loggerInstance.error(`Visão: Processo Python falhou após ${this.maxRetries} tentativas (ou não retryable). Não será reiniciado automaticamente.`);
+                this.ioInstance.emit('systemError', { code: 'VISION_PROCESS_FAILED', message: 'Serviço de visão indisponível permanentemente.' });
+            } else {
+                 this.loggerInstance.info(`Visão: Processo Python (PID: ${pid}) encerrado normalmente.`);
+            }
+            this.ioInstance.emit('SYSTEM_STATUS_UPDATE', { service: 'vision', status: 'stopped', code, signal });
         } else {
-             this.loggerInstance.info(`Visão: Processo Python (PID: ${pid}) encerrado normalmente.`); // Changed logger to this.loggerInstance
+            this.loggerInstance.warn("VisionService: ioInstance não configurado. Não é possível emitir status de saída do processo Python.");
         }
-        this.ioInstance.emit('SYSTEM_STATUS_UPDATE', { service: 'vision', status: 'stopped', code, signal });
     },
 
     ensureVisionIsRunning() {

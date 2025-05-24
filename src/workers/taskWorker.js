@@ -4,11 +4,7 @@ const MessageSystem = require('../services/messageSystem');
 const SpeechService = require('../services/speechService');
 const SystemGenerator = require('../services/systemGenerator');
 const AIService = require('../services/aiService'); // Para injetar no SystemGenerator
-const MemoryModule = require('../services/memoryModule'); // Para placeholders dbGet/dbRun
-
-// Placeholders para dbGet, dbRun (usados por queueEvents, mas MemoryModule os tem como placeholders também)
-// TODO: Substituir por importações reais do módulo de banco de dados
-const { dbGet, dbRun } = MemoryModule; // Assumindo que MemoryModule exporta seus placeholders ou funções reais
+// MemoryModule é importado por outros serviços, mas dbGet/dbRun não são usados diretamente aqui.
 
 const worker = new Worker(CONFIG.TASK_QUEUE_NAME, async job => {
     // O server.js original usa job.data.taskType, mas o payload de enqueue_task e generate_system não define taskType explicitamente, e sim o nome do job.

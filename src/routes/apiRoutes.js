@@ -6,17 +6,8 @@ const FileProcessor = require('../services/fileProcessor');
 const MessageSystem = require('../services/messageSystem');
 const { logger } = require('../core/config'); // CONFIG não é usado diretamente aqui, mas logger sim.
 const fs = require('fs').promises; // Para unlink em caso de erro de upload
-
-// Placeholders para dependências que virão de outros módulos de config
-// TODO: Importar 'taskQueue' de '../config/bullmq.js'
-const taskQueue_placeholder = {
-    add: async (jobType, data) => {
-        logger.debug('taskQueue_placeholder.add called', { jobType, data });
-        return { id: 'placeholder_job_id_' + Date.now() };
-    }
-};
-// TODO: Importar 'dbRun' de um módulo de banco de dados dedicado (MemoryModule já usa placeholders)
-const dbRun_placeholder = MemoryModule.dbRun; // Ou use o placeholder do MemoryModule
+const { taskQueue } = require('../config/initializers/bullmqSetup'); // Importar taskQueue real
+const { dbRun } = require('../config/initializers/database'); // Importar dbRun real
 
 const router = express.Router();
 
@@ -31,9 +22,8 @@ router.post('/generate-system', simpleAuth, async (req, res) => {
 
     try {
         await MemoryModule.addTask(taskId, userId, prompt, 'queued');
-        const job = await taskQueue_placeholder.add('system_generation_job', { taskId, userId, prompt });
-        // MemoryModule.dbRun já é o placeholder, então dbRun_placeholder pode ser usado diretamente
-        await dbRun_placeholder('UPDATE tasks SET job_id = ? WHERE task_id = ?', [job.id, taskId]);
+        const job = await taskQueue.add('system_generation_job', { taskId, userId, prompt });
+        await dbRun('UPDATE tasks SET job_id = ? WHERE task_id = ?', [job.id, taskId]);
         res.status(202).json({ message: 'Geração de sistema enfileirada.', taskId, jobId: job.id });
     } catch (error) {
         logger.error(`Erro em POST /api/generate-system:`, error);
@@ -59,11 +49,11 @@ router.post('/refine-system', simpleAuth, async (req, res) => {
             return res.status(404).json({ error: 'Tarefa original ou seu resultado não encontrados.' });
         }
         // originalTask.result é JSON string, precisa parsear
-        const originalResult = JSON.parse(originalTask.result); 
+        const originalResult = JSON.parse(originalTask.result);
 
         await MemoryModule.addTask(taskId, userId, `Refinar: ${originalTaskId} com "${newPrompt}"`, 'queued');
-        const job = await taskQueue_placeholder.add('system_refinement_job', { taskId, userId, originalResult, newPrompt });
-        await dbRun_placeholder('UPDATE tasks SET job_id = ? WHERE task_id = ?', [job.id, taskId]);
+        const job = await taskQueue.add('system_refinement_job', { taskId, userId, originalResult, newPrompt });
+        await dbRun('UPDATE tasks SET job_id = ? WHERE task_id = ?', [job.id, taskId]);
         res.status(202).json({ message: 'Refinamento de sistema enfileirado.', taskId, jobId: job.id });
     } catch (error) {
         logger.error(`Erro em POST /api/refine-system:`, error);

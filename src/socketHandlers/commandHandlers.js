@@ -1,9 +1,8 @@
 const { logger } = require('../core/config');
 const MaestroV4 = require('../services/maestroV4');
 const MemoryModule = require('../services/memoryModule');
-// TODO: Importar 'taskQueue' de '../config/bullmq.js' e 'dbRun' de um módulo DB
-const taskQueue_placeholder = { add: async (jobType, data) => { logger.debug('taskQueue_placeholder.add called', { jobType, data }); return ({ id: 'placeholder_job_id_' + Date.now() }); } };
-const dbRun_placeholder = MemoryModule.dbRun; // Usando o placeholder de MemoryModule
+const { taskQueue } = require('../config/initializers/bullmqSetup'); // Importar taskQueue real
+const { dbRun } = require('../config/initializers/database'); // Importar dbRun real
 
 function registerCommandHandlers(io, socket) {
    socket.on('send_command', async (data) => {
@@ -28,10 +27,10 @@ function registerCommandHandlers(io, socket) {
         const taskId = `batch-${Date.now()}-${socket.userId.slice(0, 6)}`;
         try {
            await MemoryModule.addTask(taskId, socket.userId, command, 'queued');
-           const job = await taskQueue_placeholder.add(taskType, { taskId, userId: socket.userId, command, fileInfo, ...data.payload }); 
-           await dbRun_placeholder('UPDATE tasks SET job_id = ? WHERE task_id = ?', [job.id, taskId]);
+           const job = await taskQueue.add(taskType, { taskId, userId: socket.userId, command, fileInfo, ...data.payload });
+           await dbRun('UPDATE tasks SET job_id = ? WHERE task_id = ?', [job.id, taskId]);
            logger.info(`Tarefa Batch (${taskType}) enfileirada: ${taskId}, Job ID: ${job.id}`);
-           socket.join(taskId); 
+           socket.join(taskId);
            socket.emit('task_queued_ack', { taskId, jobId: job.id, taskType }); 
         } catch (error) {
             logger.error(`Erro ao enfileirar tarefa ${taskType} para ${socket.userId}: ${error.message}`, error);

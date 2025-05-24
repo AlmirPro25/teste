@@ -2,8 +2,7 @@ const { logger } = require('../core/config');
 const { CONFIG } = require('../core/config');
 
 const CacheManager = {
-    // client: redisClient, // Será substituído por placeholder/TODO
-    client: null, // TODO: Injete ou importe o redisClient real aqui
+    client: null, // Atribuído em serverSetup.js
     ttl: CONFIG.cacheTTL, // seconds
     async get(key) {
         if (!this.client) {

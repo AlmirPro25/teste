@@ -1,8 +1,7 @@
 const { logger } = require('../core/config');
 const MemoryModule = require('../services/memoryModule');
-// TODO: Importar 'taskQueue' e 'dbRun'
-const taskQueue_placeholder = { add: async (jobType, data) => { logger.debug('taskQueue_placeholder.add called', { jobType, data }); return ({ id: 'placeholder_job_id_' + Date.now() }); } };
-const dbRun_placeholder = MemoryModule.dbRun;
+const { taskQueue } = require('../config/initializers/bullmqSetup'); // Importar taskQueue real
+const { dbRun } = require('../config/initializers/database'); // Importar dbRun real
 
 function registerSystemGenerationHandlers(io, socket) {
     socket.on('generate_system', async (data) => {
@@ -13,9 +12,9 @@ function registerSystemGenerationHandlers(io, socket) {
         try {
             await MemoryModule.addTask(taskId, socket.userId, prompt, 'queued');
             socket.join(taskId);
-            socket.emit('task_generation_started', {taskId}); 
-            const job = await taskQueue_placeholder.add('system_generation_job', { taskId, userId: socket.userId, prompt });
-            await dbRun_placeholder('UPDATE tasks SET job_id = ? WHERE task_id = ?', [job.id, taskId]);
+            socket.emit('task_generation_started', {taskId});
+            const job = await taskQueue.add('system_generation_job', { taskId, userId: socket.userId, prompt });
+            await dbRun('UPDATE tasks SET job_id = ? WHERE task_id = ?', [job.id, taskId]);
             logger.info(`Geração de sistema enfileirada para Task ${taskId}, Job ID: ${job.id}`);
         } catch (error) {
              logger.error(`Erro em generate_system para task ${taskId}:`, error);
@@ -36,9 +35,9 @@ function registerSystemGenerationHandlers(io, socket) {
                 if (!originalResult || !originalResult.code) return socket.emit('error_response', { taskId, message: 'Resultado original inválido ou sem código.' });
               await MemoryModule.updateTaskStatus(taskId, 'queued_refinement'); 
               socket.join(taskId);
-              socket.emit('task_refinement_started', {taskId}); 
-               const job = await taskQueue_placeholder.add('system_refinement_job', { taskId, userId: socket.userId, originalResult, newPrompt });
-               await dbRun_placeholder('UPDATE tasks SET job_id = ? WHERE task_id = ?', [job.id, taskId]); 
+              socket.emit('task_refinement_started', {taskId});
+               const job = await taskQueue.add('system_refinement_job', { taskId, userId: socket.userId, originalResult, newPrompt });
+               await dbRun('UPDATE tasks SET job_id = ? WHERE task_id = ?', [job.id, taskId]);
                logger.info(`Refinamento de sistema enfileirado para Task ${taskId}, Job ID: ${job.id}`);
           } catch (error) {
                logger.error(`Erro em refine_system para task ${taskId}:`, error);

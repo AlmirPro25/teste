@@ -27,7 +27,6 @@ const { startServer, gracefulShutdown } = require('./core/serverSetup');
 
 // Inicializadores de Clientes/Serviços (para gracefulShutdown ou referência direta se necessário)
 // A maioria é gerenciada dentro de startServer ou pelos próprios módulos de serviço agora
-// const { httpServerInstance, ioInstance } = require('./core/serverSetup'); // Placeholder, pois startServer que os retorna -> Não são necessários aqui porque startServer os retorna e são passados para gracefulShutdown
 
 const app = express();
 

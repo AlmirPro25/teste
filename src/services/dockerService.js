@@ -3,23 +3,8 @@ const path = require('path');
 const { logger } = require('../core/config');
 const { CONFIG } = require('../core/config');
 
-// TODO: Injete ou importe a instância 'docker' do Dockerode aqui.
-const docker_placeholder = {
-    getContainer: (containerName) => ({
-        remove: async (options) => logger.debug(`docker_placeholder.getContainer('${containerName}').remove() called`, options)
-    }),
-    createContainer: async (options) => {
-        logger.debug('docker_placeholder.createContainer() called', options);
-        return {
-            start: async () => logger.debug('container_placeholder.start() called'),
-            wait: async () => { logger.debug('container_placeholder.wait() called'); return { StatusCode: 0 }; },
-            remove: async (options) => logger.debug(`container_placeholder.remove() called`, options) // Adicionado para o finally
-        };
-    }
-};
-
 const DockerService = {
-    docker: docker_placeholder, // Usar o placeholder definido
+    docker: null, // Atribuído em serverSetup.js
     workDir: CONFIG.DOCKER_WORK_DIR,
     resourceLimits: CONFIG.dockerResourceLimits,
     images: CONFIG.dockerImages,

@@ -7,7 +7,7 @@
     "start": "node src/app.js",
     "dev": "NODE_ENV=development nodemon src/app.js",
     "lint": "echo 'Linter não configurado.'",
-    "test": "echo \"Nenhum teste configurado.\" && exit 0",
+    "test": "jest --coverage",
     "setup:vision": "cd vision && python3 -m venv .venv && source .venv/bin/activate && pip install --upgrade pip && pip install -r requirements.txt && deactivate && echo 'Ambiente Python e dependências criados em ./vision/.venv. Atualize VISION_PYTHON_PATH no .env se necessário.'",
     "docker:run": "docker-compose up -d",
     "docker:stop": "docker-compose down"
@@ -42,5 +42,14 @@
   },
   "engines": {
     "node": ">=18.0.0"
+  },
+  "jest": {
+    "collectCoverageFrom": [
+      "src/**/*.js",
+      "!src/app.js",
+      "!src/public/index.html",
+      "!**/__tests__/**",
+      "!**/node_modules/**"
+    ]
   }
 }

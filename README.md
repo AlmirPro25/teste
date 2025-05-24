@@ -79,6 +79,10 @@ nexus-unified-v4.9/
 ├── generated_media/            # Diretório para mídias geradas (áudio, imagens)
 │   ├── audio/
 │   └── images/
+├── __tests__/                  # Testes automatizados
+│   ├── core/
+│   ├── services/
+│   └── integration/
 ├── package.json                # Dependências e scripts Node.js
 ├── setup_nexus.sh              # Script de setup do ambiente
 ├── README.md                   # Este arquivo
@@ -166,6 +170,24 @@ Após iniciar o servidor, acesse a interface web no seu navegador:
 *   **URL**: `http://localhost:<PORTA_CONFIGURADA>` (ex: `http://localhost:6000` se a porta for 6000).
 
 Você precisará de um token JWT válido para se autenticar via Socket.IO. A interface web deve ter um mecanismo para obter/inserir este token. Para testes locais com `simpleAuth` em rotas HTTP, o `userId` pode ser passado via header `x-user-id`.
+
+## Testes
+
+Este projeto utiliza [Jest](https://jestjs.io/) para testes automatizados. Os arquivos de teste estão localizados no diretório `__tests__` na raiz do projeto e em seus subdiretórios (ex: `__tests__/core`, `__tests__/services`).
+
+Para executar todos os testes e gerar um relatório de cobertura de código, utilize o seguinte comando a partir da raiz do projeto:
+
+```bash
+npm test
+```
+
+Este comando irá:
+*   Executar todos os arquivos com sufixo `.spec.js` ou `.test.js`.
+*   Exibir um resumo dos resultados dos testes no console.
+*   Gerar um relatório de cobertura de código na pasta `coverage/`. Você pode visualizar o relatório HTML abrindo o arquivo `coverage/lcov-report/index.html` em seu navegador.
+
+**Nota sobre Dependências de Teste:**
+A instalação de todas as dependências de desenvolvimento (`npm install`), incluindo o Jest e pacotes como `robotjs` (que é uma dependência do projeto principal e pode ser compilado durante o `npm install`), pode requerer ferramentas de compilação e bibliotecas de sistema específicas (como `build-essential`, `libxtst-dev`, `libpng-dev` em sistemas baseados em Debian/Ubuntu). Consulte a seção "Pré-requisitos" e a documentação oficial do `robotjs` se encontrar problemas durante a instalação das dependências em seu ambiente local.
 
 ## Roadmap / Próximos Passos e Melhorias Futuras
 

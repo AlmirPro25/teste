@@ -2,6 +2,7 @@
 
 [![Status](https://img.shields.io/badge/status-em%20desenvolvimento-yellow)](https://github.com/seu-usuario/nexus-unified-v4.9)
 [![License](https://img.shields.io/badge/license-ISC-blue.svg)](LICENSE.md)
+[![Test Coverage](https://img.shields.io/badge/coverage-pending-yellow)](#) (*Nota: Badge de cobertura de testes pendente de integração com CI/CD.*)
 
 Interface Unificada para Orquestração de Agentes IA, Geração Multimodal e Automação Desktop/Web.
 
@@ -50,6 +51,29 @@ O Nexus Unified v4.9 é construído sobre uma arquitetura modular Node.js, proje
 *   **Comunicação em Tempo Real**: Uso intensivo de Socket.IO para feedback instantâneo ao usuário.
 *   **Upload e Processamento de Arquivos**: Suporte para upload de arquivos com processamento específico (ex: extração de texto de PDFs).
 *   **Geração de Sistemas Web**: Capacidade de gerar aplicações web básicas (HTML, CSS, JS) com base em prompts, com um ciclo iterativo de feedback e refinamento.
+
+## Exemplos de Uso e Visualização
+
+Para ajudar no onboarding de novos usuários, esta seção fornecerá exemplos práticos e visões gerais da interface.
+
+### Exemplos de Chamadas à API
+
+*   (TODO: Adicionar exemplos de chamadas à API aqui. Ex: curl para upload de arquivo, chamada para iniciar uma tarefa de IA, etc.)
+    *   Exemplo: `curl -X POST http://localhost:6000/api/tasks --header "x-user-id: seu-id" -d '{{"prompt": "Gere uma imagem de um gato astronauta"}}'`
+
+### Interface Web
+
+A interface web unificada (`src/public/index.html`) é o principal ponto de interação com o Nexus Unified.
+
+*   **Painel Principal:**
+    `[Screenshot of Dashboard: Interface principal mostrando status e opções]`
+    *(Nota: Substituir por uma imagem real do painel)*
+
+*   **Interagindo com Funcionalidades:**
+    `[GIF of feature X: Animação mostrando o uso de uma funcionalidade chave, como a geração de texto ou o início de uma automação]`
+    *(Nota: Substituir por um GIF real demonstrando uma funcionalidade)*
+
+*   (TODO: Adicionar mais descrições e screenshots/GIFs conforme necessário para ilustrar outras partes importantes da UI)
 
 ## Estrutura de Diretórios
 
@@ -259,6 +283,9 @@ Esta seção detalha os planos para o desenvolvimento futuro do Nexus Unified.
 *   **Melhoria da Documentação Interna (para Desenvolvedores):**
     *   Ação: Adicionar comentários claros em código complexo, documentar a arquitetura de módulos, decisões de design importantes e guias de setup/desenvolvimento.
     *   Motivo: Facilita o onboarding de novos desenvolvedores e a compreensão do sistema por toda a equipe.
+*   **Automação CI/CD:**
+    *   Ação: Integrar pipelines de CI/CD (ex: GitHub Actions) para rodar testes, lint e verificar a cobertura de código automaticamente em cada pull request e merge na branch principal.
+    *   Motivo: Garante a qualidade contínua do código, detecta problemas cedo e automatiza processos de verificação.
 
 ### 6. Interface do Usuário (UI)
 *   **Dashboard Personalizável:**
@@ -284,6 +311,9 @@ Esta seção detalha os planos para o desenvolvimento futuro do Nexus Unified.
 *   **Documentação da API (se aplicável):**
     *   Adição/Melhoria: Se houver uma API, garantir que esteja completa, com exemplos de código, descrições de endpoints, parâmetros, e respostas (usando ferramentas como Swagger/OpenAPI).
     *   Motivo: Essencial para desenvolvedores externos que precisam integrar seus sistemas com o nosso.
+*   **Internacionalização da Documentação (Inglês):**
+    *   Adição/Melhoria: Criar e manter uma versão em inglês do `README.md` e, potencialmente, de outra documentação chave para alcançar um público internacional.
+    *   Motivo: Aumenta a acessibilidade e o potencial de colaboração do projeto globalmente.
 
 ### 8. Correção de Bugs
 *   **Priorização e Resolução de Bugs de Alto Impacto:**
@@ -303,15 +333,12 @@ Com essa análise, poderíamos definir um roadmap claro para as próximas fases 
 
 ## Como Contribuir
 
-Contribuições são bem-vindas! Se você deseja contribuir:
+Agradecemos seu interesse em contribuir para o Nexus Unified! Temos um guia detalhado para contribuições e um código de conduta para garantir um ambiente colaborativo e respeitoso.
 
-1.  Faça um Fork do repositório.
-2.  Crie uma nova Branch para sua feature ou correção (`git checkout -b feature/sua-feature` ou `bugfix/seu-bug`).
-3.  Faça suas alterações e commit (`git commit -m 'Adiciona nova feature X'`).
-4.  Envie para sua Branch (`git push origin feature/sua-feature`).
-5.  Abra um Pull Request para a branch principal do repositório original.
+*   **Guia de Contribuição:** Por favor, leia nosso [Guia de Contribuição](CONTRIBUTING.md) para informações detalhadas sobre como reportar bugs, sugerir melhorias, e submeter suas alterações de código.
+*   **Código de Conduta:** Todos os contribuidores devem aderir ao nosso [Código de Conduta](CODE_OF_CONDUCT.md).
 
-Por favor, siga as convenções de código existentes e adicione testes para suas alterações sempre que possível.
+Sua ajuda é muito bem-vinda para tornar este projeto ainda melhor!
 
 ## Licença
 
